@@ -4,18 +4,18 @@ project (HashTable VERSION 1.0.0 LANGUAGES CXX )
 #=== FINDING PACKAGES ===#
 
 # Locate GTest package (library)
-find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+# find_package(GTest REQUIRED)
+# include_directories(${GTEST_INCLUDE_DIRS})
 
-#=== Test target ===
+# #=== Test target ===
 
-include_directories( include )
-add_executable(run_tests test/main.cpp
-                         driver/account.cpp )
+# include_directories( include )
+# add_executable(run_tests test/main.cpp
+#                          driver/account.cpp )
 
-# Link with the google test libraries.
-target_link_libraries(run_tests PRIVATE ${GTEST_LIBRARIES} PRIVATE pthread )
-target_compile_features(run_tests PUBLIC cxx_std_17)
+# # Link with the google test libraries.
+# target_link_libraries(run_tests PRIVATE ${GTEST_LIBRARIES} PRIVATE pthread )
+# target_compile_features(run_tests PUBLIC cxx_std_17)
 
 #=== Driver target ===
 

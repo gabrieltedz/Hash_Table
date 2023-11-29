@@ -10,6 +10,7 @@
 #include <iterator>     // std::begin(), std::end()
 #include <initializer_list>
 #include <utility> // std::pair
+#include <sstream>
 
 namespace ac // Associative container
 {
@@ -24,7 +25,6 @@ namespace ac // Associative container
 
         friend std::ostream & operator<<( std::ostream & os_, const HashEntry & he_ ) {
             os_ << "{" << he_.m_key << "," << he_.m_data << "}";
-            // os_ << he_.m_data;
             return os_;
         }
     };
@@ -60,10 +60,24 @@ namespace ac // Associative container
             float max_load_factor() const;
             void max_load_factor(float mlf);
 
-            friend std::ostream & operator<<( std::ostream & os_, const HashTbl & ht_ ) {
-                // TODO
+
+
+            friend std::ostream & operator<<(std::ostream & os_, const HashTbl & ht_)
+            {
+                for (size_t i{0}; i < ht_.m_size; ++i) {
+                    for (const auto& entry : ht_.m_table[i]) {
+                        const auto &e = entry.m_data;
+                        std::cout << e << "\n";
+                    }
+                }
+
+                // Adicionar uma linha em branco após imprimir todos os elementos
+                os_ << std::endl;
+
                 return os_;
             }
+
+
 
         private:
             static size_type find_next_prime( size_type );
@@ -74,7 +88,7 @@ namespace ac // Associative container
             size_type m_count;//!< Numero de elementos na tabel.
             // std::unique_ptr< std::forward_list< entry_type > [] > m_table;
             std::forward_list< entry_type > *m_table; //!< Tabela de listas para entradas de tabela.
-            static const short DEFAULT_SIZE = 10;
+            static const short DEFAULT_SIZE = 11;
     };
 
 } // MyHashTable
