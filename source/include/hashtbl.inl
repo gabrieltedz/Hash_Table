@@ -17,7 +17,7 @@ namespace ac {
 	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
 	HashTbl<KeyType,DataType,KeyHash,KeyEqual>::HashTbl( size_type sz )
     {
-        m_size = sz;
+        m_size = 0; m_size = sz;
         // Checks if the size chosen by the user is prime, if not, finds the next prime.
         if (!(isPrime(m_size)))
             m_size = nextPrime(sz);
@@ -39,6 +39,9 @@ namespace ac {
     {
         // Function to initialize the constructor, the same one used with the operator =
         initialize_hash(source);
+        m_count = source.m_count;
+        m_size = source.m_size;
+
     }
 
     /*!
@@ -51,6 +54,7 @@ namespace ac {
     {
         // Function to initialize the constructor, the same one used with the operator =
         initialize_hash_ilist(ilist);
+        m_count =  ilist.size();
     }
 
     /*!
@@ -65,6 +69,7 @@ namespace ac {
     {
         // Function to initialize the hash with the assignment operator =, the same one used with the constructor
         initialize_hash(clone);
+        m_count = clone.m_count;
         return *this;
     }
 
@@ -80,6 +85,7 @@ namespace ac {
     {
         // Function to initialize the hash with the assignment operator =, the same one used with the constructor
         initialize_hash_ilist(ilist);
+        m_count =  ilist.size();
         return *this;
     }
 
@@ -276,7 +282,19 @@ void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
     typename HashTbl<KeyType, DataType, KeyHash, KeyEqual>::size_type
     HashTbl<KeyType, DataType, KeyHash, KeyEqual>::count(const KeyType &key_) const
     {
-        return m_count;
+        // Calculate the hash value for the key
+        size_t hash_value = KeyHash()(key_) % m_size;
+
+        // Get the linked list corresponding to the hash position
+        auto &hash_list = m_table[hash_value];
+
+        size_type count{0};
+
+        for (auto const& entry : hash_list){
+            count++;
+        }
+
+        return count;
     }
 
     /*!
@@ -329,6 +347,7 @@ void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
 
         // Iterate over the linked list at the hash position
         auto &hash_list = m_table[hash_index];
+        
 
         // Search for the element with the provided key in the list
         auto it = std::find_if(hash_list.begin(), hash_list.end(),
@@ -338,7 +357,8 @@ void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
         if (it != hash_list.end()) {
             // If the key already exists, return a reference to the value associated with the key
             return it->m_data;
-        } else {
+        } 
+        else {
             // If the key does not exist, insert a new element into the table
             insert(key_, DataType{}); // Here you can use DataType{} or any desired default value
             // Search again for the newly inserted element
@@ -389,12 +409,11 @@ void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
      */
     template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
     void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::initialize_hash(const HashTbl& source) {
-        // Check if the size of the source table is prime, adjust the size if necessary
-        if (!isPrime(source.m_size))
-            m_size = nextPrime(source.m_size);
+
         
-        // Copy the count from the source table
-        m_count = source.m_count;
+        // Copy the data from the source table
+         m_size = source.m_size;
+         m_count = source.m_count;
 
         // Allocate a new table with the adjusted size
         m_table = new std::forward_list<entry_type>[m_size];
@@ -422,12 +441,10 @@ void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
     void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::initialize_hash_ilist(
         const std::initializer_list<entry_type>& ilist) {
         
-        // Check if the size of the initializer list is prime, adjust the size if necessary
-        if (!isPrime(ilist.size()))
-            m_size = m_count = nextPrime(ilist.size());
+        m_size = m_count = ilist.size();
         
         // Set the size and count to match the initializer list size
-        m_size = m_count = ilist.size();
+        m_count = ilist.size();
 
         // Allocate a new table with the adjusted size
         m_table = new std::forward_list<entry_type>[m_size];

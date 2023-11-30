@@ -53,7 +53,7 @@ namespace ac // Associative container
             bool erase( const KeyType & );
             void clear();
             bool empty() const;
-            inline size_type size() const { return m_size; };
+            inline size_type size() const { return m_count; };
             DataType& at( const KeyType& );
             DataType& operator[]( const KeyType& );
             size_type count( const KeyType& ) const;
@@ -90,7 +90,7 @@ namespace ac // Associative container
             int nextPrime(size_type)const;
 
         private:
-            size_type m_size; //!< Tamanho da tabela.
+            size_type m_size{0}; //!< Tamanho da tabela.
             size_type m_count;//!< Numero de elementos na tabel.
             float m_factor_load; //!< fator
             // std::unique_ptr< std::forward_list< entry_type > [] > m_table;

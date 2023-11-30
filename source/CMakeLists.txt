@@ -18,6 +18,6 @@ target_compile_features(run_tests PUBLIC cxx_std_17)
 
 #=== Driver target ===
 
-include_directories(driver)
-add_executable(driver_hash driver/account.cpp driver/driver_ht.cpp)
-target_compile_features(driver_hash PUBLIC cxx_std_17)
+# include_directories(driver)
+# add_executable(driver_hash driver/account.cpp driver/driver_ht.cpp)
+# target_compile_features(driver_hash PUBLIC cxx_std_17)

@@ -133,6 +133,8 @@ TEST_F(HTTest, OperatorSquareBraketsLHS2)
     {
         entered = true;
         ASSERT_EQ( pair.second, word_map[pair.first] );
+        //std::cout << pair.second << " " << word_map[pair.first] << "\n";
+        //bug
     }
     ASSERT_TRUE( entered );
 }
