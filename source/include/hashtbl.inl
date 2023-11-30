@@ -1,328 +1,375 @@
 #include "hashtbl.h"
 
+/*!
+ * @file hashtbl.h
+ * @brief Definition of the HashTbl class.
+ *
+ * This file contains the declaration of the HashTbl class, which represents a hash table.
+ * Authors: Gabriel Victor and Thiago Raquel.
+ */
 
 namespace ac {
+    /*!
+     * @brief Constructor that initializes the table with a specified size.
+     *
+     * @param sz Size of the table.
+     */
 	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-
-    /**
-    * @brief Construtor que inicializa a tabela com um tamanho especificado.
-    * 
-    * @param sz Tamanho da tabela.
-    */
 	HashTbl<KeyType,DataType,KeyHash,KeyEqual>::HashTbl( size_type sz )
-	{   
+    {
         m_size = sz;
-        //Verifica se o tamanho escolido pelo usuário é primo, caso não seja busca o prómimo primo.
-        if(!(isPrime(m_size))) m_size = nextPrime(sz);
+        // Checks if the size chosen by the user is prime, if not, finds the next prime.
+        if (!(isPrime(m_size)))
+            m_size = nextPrime(sz);
 
-        //Quantidades de dados é nulo.
+        // Number of data is zero.
         m_count = 0;
 
-        //Inicializa o hash com o tamanho apropriado e primo.
+        // Initializes the hash with the appropriate and prime size.
         m_table = new std::forward_list<entry_type>[m_size];
-
-	}
-
-    /**
-    * @brief Construtor que inicializa a tabela com base em outra tabela existente.
-    * 
-    * @param source A tabela da qual copiar os elementos.
-    */
-	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-	HashTbl<KeyType,DataType,KeyHash,KeyEqual>::HashTbl( const HashTbl& source )
-	{
-        // Função para inicializar o construtor, o mesmo usado com o operador =
-        initialize_hash(source);
-
-	}
-
-    
-    /**
-     * @brief Construtor que inicializa a tabela com base em uma lista de inicialização.
-     * 
-     * @param ilist Lista de inicialização contendo pares chave-valor.
-     */
-	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-	HashTbl<KeyType,DataType,KeyHash,KeyEqual>::HashTbl( const std::initializer_list<entry_type>& ilist )
-    {
-        // Função para inicializar o construtor, o mesmo usado com o operador =
-        initialize_hash_ilist(ilist);
-        
     }
 
-    /**
-     * @brief Operador de atribuição que substitui os elementos da tabela pelos de outra tabela.
-     * 
-     * @param clone A tabela a ser copiada.
-     * @return Referência para a tabela após a cópia.
+    /*!
+     * @brief Constructor that initializes the table based on another existing table.
+     *
+     * @param source The table from which to copy the elements.
      */
-	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-	HashTbl<KeyType,DataType,KeyHash,KeyEqual>&
-    HashTbl<KeyType,DataType,KeyHash,KeyEqual>::operator=( const HashTbl& clone )
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual>::HashTbl(const HashTbl &source)
     {
-        // Função para inicializar o hash com operador =, o mesmo usado com construtor 
+        // Function to initialize the constructor, the same one used with the operator =
+        initialize_hash(source);
+    }
+
+    /*!
+     * @brief Constructor that initializes the table based on an initializer list.
+     *
+     * @param ilist Initialization list containing key-value pairs.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual>::HashTbl(const std::initializer_list<entry_type> &ilist)
+    {
+        // Function to initialize the constructor, the same one used with the operator =
+        initialize_hash_ilist(ilist);
+    }
+
+    /*!
+     * @brief Assignment operator that replaces the table's elements with those of another table.
+     *
+     * @param clone The table to be copied.
+     * @return Reference to the table after the copy.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual> &
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual>::operator=(const HashTbl &clone)
+    {
+        // Function to initialize the hash with the assignment operator =, the same one used with the constructor
         initialize_hash(clone);
         return *this;
     }
 
-    /**
-     * @brief Operador de atribuição que substitui os elementos da tabela pelos de uma lista de inicialização.
-     * 
-     * @param ilist Lista de inicialização contendo pares chave-valor.
-     * @return Referência para a tabela após a cópia.
+    /*!
+     * @brief Assignment operator that replaces the table's elements with those of an initializer list.
+     *
+     * @param ilist Initialization list containing key-value pairs.
+     * @return Reference to the table after the copy.
      */
-	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-	HashTbl<KeyType,DataType,KeyHash,KeyEqual>&
-    HashTbl<KeyType,DataType,KeyHash,KeyEqual>::operator=( const std::initializer_list< entry_type >& ilist )
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual> &
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual>::operator=(const std::initializer_list<entry_type> &ilist)
     {
-        // Função para inicializar o hash com operador =, o mesmo usado com construtor 
+        // Function to initialize the hash with the assignment operator =, the same one used with the constructor
         initialize_hash_ilist(ilist);
         return *this;
     }
 
-    /**
-     * @brief Destrutor que libera a memória alocada pela tabela.
+    /*!
+     * @brief Destructor that frees the memory allocated by the table.
      */
-	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-	HashTbl<KeyType,DataType,KeyHash,KeyEqual>::~HashTbl( )
-	{
-        //deleta o hash.
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual>::~HashTbl()
+    {
+        // Delete the hash.
         delete[] m_table;
-	}
+    }
 
-    /**
-     * @brief Insere um novo par chave-valor na tabela.
-     * 
-     * @param key_ A chave a ser inserida.
-     * @param new_data_ Os dados associados à chave.
-     * @return true se a inserção foi bem-sucedida, false se a chave já existe.
-     * 
-     * Esta função insere um novo elemento na tabela hash. Calcula o índice hash para a chave
-     * usando a função de hash e, em seguida, verifica se a chave já existe na lista encadeada
-     * correspondente. Se a chave não existir, um novo par chave-valor é inserido no início da lista.
-     * Se a carga na tabela exceder o fator de carga especificado, a função chama a rehash para
-     * reorganizar a tabela e reduzir a carga.
+    /*!
+     * @brief Inserts a new key-value pair into the table.
+     *
+     * @param key_ The key to be inserted.
+     * @param new_data_ The data associated with the key.
+     * @return true if the insertion was successful, false if the key already exists.
+     *
+     * This function inserts a new element into the hash table. It calculates the hash index for the key
+     * using the hash function and then checks if the key already exists in the corresponding linked list.
+     * If the key does not exist, a new key-value pair is inserted at the beginning of the list.
+     * If the load on the table exceeds the specified load factor, the function calls rehash to
+     * reorganize the table and reduce the load.
      */
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
     bool HashTbl<KeyType, DataType, KeyHash, KeyEqual>::insert(const KeyType &key_, const DataType &new_data_)
     {
-        
-        // Calcula o índice hash
+        // Calculate the hash index
         auto hash_index = KeyHash()(key_) % m_size;
 
-        // Itera sobre a lista encadeada na posição hash_value
-        auto & hash_list = m_table[hash_index];
+        // Iterate over the linked list at the hash position
+        auto &hash_list = m_table[hash_index];
 
-
-        // Verifica se a chave já existe na lista
-            auto it = std::find_if(hash_list.begin(), hash_list.end(),
+        // Check if the key already exists in the list
+        auto it = std::find_if(hash_list.begin(), hash_list.end(),
                             [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
 
         if (it == hash_list.end()) {
-            // A chave não existe, adiciona um novo elemento na lista
+            // The key does not exist, add a new element to the list
             hash_list.emplace_front(key_, new_data_);
             m_count++;
 
-            if(m_count / m_size > m_factor_load){
+            if (m_count / m_size > m_factor_load) {
                 rehash();
             }
-            return true;  // Inserção bem-sucedida
+            return true; // Successful insertion
         } 
         else {
-            // A chave já existe, altera os dados
-
+            // The key already exists, update the data
             it->m_data = new_data_;
-            return false;  // Inserção mal-sucedida
+            return false; // Unsuccessful insertion
         }
-
-
-
     }
 
+
+    /*!
+ * @brief Clears all elements from the hash table.
+ *
+ * This function deletes the nodes from the linked lists at each index.
+ */
+template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
+{
+    // Delete nodes from the linked lists at each index
+    for (size_t i{0}; i < m_size; ++i) {
+        m_table[i].clear();
+    }
+
+    m_count = 0;
+}
+
+    /*!
+     * @brief Checks if the hash table is empty.
+     *
+     * @return true if the table is empty, false otherwise.
+     */
     template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
-    void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
-    {
-        // deleta os nós da listas encadeadas de cada índice
-        for (size_t i{0}; i < m_size; ++i) {
-            m_table[i].clear();
-        }
-
-        m_count = 0;
-    }
-
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
     bool HashTbl<KeyType, DataType, KeyHash, KeyEqual>::empty() const
     {
         return m_count == 0;
     }
 
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-    bool HashTbl<KeyType, DataType, KeyHash, KeyEqual>::retrieve( const KeyType & key_, DataType & data_item_ ) const
+    /*!
+     * @brief Retrieves the data associated with a given key.
+     *
+     * @param key_ The key to search for.
+     * @param data_item_ The variable to store the retrieved data.
+     * @return true if the retrieval was successful, false if the key does not exist.
+     *
+     * This function iterates over the linked list at the hash position and checks if the key already
+     * exists in the list. If the key exists, the associated data is stored in the provided variable.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    bool HashTbl<KeyType, DataType, KeyHash, KeyEqual>::retrieve(const KeyType &key_, DataType &data_item_) const
     {
-        // Itera sobre a lista encadeada na posição hash_value
-
+        // Iterate over the linked list at the hash position
         size_t hash_value = KeyHash()(key_) % m_size;
-
-        
         auto &hash_list = m_table[hash_value];
 
-        // Verifica se a chave já existe na lista
+        // Check if the key already exists in the list
         auto it = std::find_if(hash_list.begin(), hash_list.end(),
-                        [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
+                            [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
 
         if (it != hash_list.end()) {
-            // A chave já existe, adiciona um novo elemento na lista
+            // The key exists, store the associated data in the variable
             data_item_ = it->m_data;
+            return true; // Successful retrieval
+        }
 
-            return true;  // Inserção bem-sucedida
-        } 
-
-
-        return false; 
+        return false; // Key not found
     }
 
-    /**
-     * @brief Realiza o processo de rehashing, aumentando o tamanho da tabela hash e reorganizando os elementos.
+    /*!
+     * @brief Performs the rehashing process, increasing the size of the hash table and rearranging the elements.
      *
-     * O rehashing é necessário quando o fator de carga da tabela hash atinge um limite, garantindo um desempenho adequado.
-     * Neste processo, o tamanho da tabela hash é aumentado e todos os elementos são redistribuídos para as novas posições.
+     * Rehashing is necessary when the load factor of the hash table reaches a limit, ensuring proper performance.
+     * In this process, the size of the hash table is increased, and all elements are redistributed to the new positions.
      */
     template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
     void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::rehash(void)
     {
-        // Armazena o tamanho atual da tabela
+        // Store the current size of the table
         auto aux = m_size;
 
-        // Verifica se o dobro do tamanho atual é um número primo
+        // Check if twice the current size is a prime number
         if (!(isPrime(m_size * 2)))
             m_size = nextPrime(m_size * 2);
 
-        // Cria uma nova tabela hash com o novo tamanho
+        // Create a new hash table with the new size
         std::forward_list<entry_type> *m_table2 = new std::forward_list<entry_type>[m_size];
 
-        // Muda os elementos da tabela antiga para a nova tabela
+        // Move elements from the old table to the new table
         for (size_t i = 0; i < aux; i++)
         {
             for (const auto &entry : m_table[i])
             {
-                // Calcula o novo valor de hash para a chave
+                // Calculate the new hash value for the key
                 size_t hash_value = KeyHash()(entry.m_key) % m_size;
 
-                // Adiciona o elemento à nova posição na nova tabela
+                // Add the element to the new position in the new table
                 m_table2[hash_value].emplace_front(entry.m_key, entry.m_data);
             }
         }
 
-        // Limpa a tabela antiga
+        // Clear the old table
         delete [] m_table;
 
-        // Atualiza a tabela para apontar para a nova tabela
+        // Update the table to point to the new table
         m_table = m_table2;
     }
 
-
-    /**
-     * @brief Remove um elemento com a chave fornecida da tabela hash.
+    /*!
+     * @brief Removes an element with the provided key from the hash table.
      *
-     * Esta função procura por um elemento na tabela hash com a chave especificada e o remove, se encontrado.
+     * This function searches for an element in the hash table with the specified key and removes it if found.
      *
-     * @param key_ A chave do elemento a ser removido.
-     * @return true se a remoção for bem-sucedida, false se a chave não for encontrada.
+     * @param key_ The key of the element to be removed.
+     * @return true if the removal is successful, false if the key is not found.
      */
-
     template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
     bool HashTbl<KeyType, DataType, KeyHash, KeyEqual>::erase(const KeyType &key_)
     {
-        // Calcula o valor de hash para a chave
+        // Calculate the hash value for the key
         size_t hash_value = KeyHash()(key_) % m_size;
 
-        // Obtém a lista vinculada correspondente à posição de hash
+        // Get the linked list corresponding to the hash position
         auto &hash_list = m_table[hash_value];
 
-        // Procura o elemento com a chave fornecida na lista
+        // Search for the element with the provided key in the list
         auto it = std::find_if(hash_list.begin(), hash_list.end(),
                                 [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
 
-        // Verifica se algum elemento foi removido
+        // Check if any element was removed
         if (it != hash_list.end()) {
-            // Remove os elementos removidos da lista
+            // Remove the removed elements from the list
             hash_list.remove_if([&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
-            m_count--; // Atualiza o contador de elementos na tabela
+            m_count--; // Update the element count in the table
             return true;
         }
 
-        // A chave não foi encontrada na tabela hash
+        // The key was not found in the hash table
         return false;
     }
 
-	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-    typename HashTbl< KeyType, DataType, KeyHash, KeyEqual >::size_type
-    HashTbl< KeyType, DataType, KeyHash, KeyEqual >::count( const KeyType & key_ ) const
+    /*!
+     * @brief Returns the number of elements in the hash table.
+     *
+     * @param key_ The key to count.
+     * @return The number of occurrences of the key in the hash table.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    typename HashTbl<KeyType, DataType, KeyHash, KeyEqual>::size_type
+    HashTbl<KeyType, DataType, KeyHash, KeyEqual>::count(const KeyType &key_) const
     {
         return m_count;
     }
 
-	template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-    DataType& HashTbl<KeyType, DataType, KeyHash, KeyEqual>::at( const KeyType & key_ )
-    {
-        // Calcula o índice hash
-        auto hash_index = KeyHash()(key_) % m_size;
-
-        // Itera sobre a lista encadeada na posição hash_value
-        auto & hash_list = m_table[hash_index];
-
-
-        // Verifica se a chave já existe na lista
-            auto it = std::find_if(hash_list.begin(), hash_list.end(),
-                            [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
-
-        if (it != hash_list.end()) {
-            return it->m_data;
-
-        } 
-
-        throw std::out_of_range("Key not found");
-        
-
-    }
-
+    /*!
+     * @brief Retrieves the value associated with the specified key.
+     *
+     * This function retrieves the value associated with the specified key.
+     * If the key is found in the hash table, the corresponding value is returned.
+     * If the key is not found, an out_of_range exception is thrown.
+     *
+     * @param key_ The key to retrieve the associated value.
+     * @return A reference to the value associated with the key.
+     * @throws std::out_of_range if the key is not found.
+     */
     template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
-    DataType& HashTbl<KeyType, DataType, KeyHash, KeyEqual>::operator[](const KeyType &key_)
+    DataType& HashTbl<KeyType, DataType, KeyHash, KeyEqual>::at(const KeyType &key_)
     {
-        // Calcula o índice hash
+        // Calculate the hash index
         auto hash_index = KeyHash()(key_) % m_size;
 
-        // Itera sobre a lista encadeada na posição hash_value
+        // Iterate over the linked list at the hash position
         auto &hash_list = m_table[hash_index];
 
-        // Procura o elemento com a chave fornecida na lista
+        // Check if the key already exists in the list
         auto it = std::find_if(hash_list.begin(), hash_list.end(),
                             [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
 
-        // Verifica se a chave já existe na lista
         if (it != hash_list.end()) {
-            // Se a chave já existe, retorna uma referência para o valor associado à chave
             return it->m_data;
-        } else {
-            // Se a chave não existir, insere um novo elemento na tabela
-            insert(key_, DataType{}); // Aqui você pode usar DataType{} ou qualquer valor padrão desejado
-            // Procura novamente o elemento recém-inserido
-            // it = std::find_if(hash_list.begin(), hash_list.end(),
-            //                 [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
-            // // Retorna uma referência para o valor associado à chave
-            // return it->m_data;
-            hash_list.emplace_front(key_, DataType());
-            return hash_list.front().m_data; // Retorna uma referência ao valor recém-inserido
         }
+
+        throw std::out_of_range("Key not found");
     }
 
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-    void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::max_load_factor( float mlf )
+    /*!
+     * @brief Access or insert the value associated with the specified key.
+     *
+     * This function accesses or inserts the value associated with the specified key.
+     * If the key is found in the hash table, the corresponding value is returned.
+     * If the key is not found, a new element with the specified key and a default-constructed
+     * value is inserted into the hash table, and a reference to the newly inserted value is returned.
+     *
+     * @param key_ The key to access or insert.
+     * @return A reference to the value associated with the key.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    DataType& HashTbl<KeyType, DataType, KeyHash, KeyEqual>::operator[](const KeyType &key_)
+    {
+        // Calculate the hash index
+        auto hash_index = KeyHash()(key_) % m_size;
+
+        // Iterate over the linked list at the hash position
+        auto &hash_list = m_table[hash_index];
+
+        // Search for the element with the provided key in the list
+        auto it = std::find_if(hash_list.begin(), hash_list.end(),
+                            [&](const entry_type &entry) { return KeyEqual()(entry.m_key, key_); });
+
+        // Check if the key already exists in the list
+        if (it != hash_list.end()) {
+            // If the key already exists, return a reference to the value associated with the key
+            return it->m_data;
+        } else {
+            // If the key does not exist, insert a new element into the table
+            insert(key_, DataType{}); // Here you can use DataType{} or any desired default value
+            // Search again for the newly inserted element
+            hash_list.emplace_front(key_, DataType());
+            return hash_list.front().m_data; // Return a reference to the newly inserted value
+        }
+    }
+    /*!
+     * @brief Set the maximum load factor for the hash table.
+     *
+     * This function sets the maximum load factor for the hash table.
+     * The load factor is the ratio of the number of elements to the size of the table.
+     * If the load factor exceeds the specified value during an insertion operation,
+     * the table is rehashed to ensure proper performance.
+     *
+     * @param mlf The new maximum load factor.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::max_load_factor(float mlf)
     {
         m_factor_load = mlf;
     }
 
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
+    /*!
+     * @brief Get the current maximum load factor for the hash table.
+     *
+     * This function returns the current maximum load factor for the hash table.
+     *
+     * @return The current maximum load factor.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
     float HashTbl<KeyType, DataType, KeyHash, KeyEqual>::max_load_factor() const
     {
         return m_factor_load;
@@ -330,15 +377,29 @@ namespace ac {
 
 
 
-
     /*=================== Métodos auxiliares ==============================*/
+    /*!
+     * @brief Initializes the hash table with the contents of another hash table.
+     *
+     * This function initializes the current hash table by copying the contents of another hash table.
+     * It adjusts the size, count, and table structure to match the source hash table and inserts each
+     * key-value pair from the source into the current hash table.
+     *
+     * @param source The source hash table to copy from.
+     */
     template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
-    void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::initialize_hash(const HashTbl& source  ){
-
-        if(!isPrime(source.m_size)) m_size = nextPrime(source.m_size);
+    void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::initialize_hash(const HashTbl& source) {
+        // Check if the size of the source table is prime, adjust the size if necessary
+        if (!isPrime(source.m_size))
+            m_size = nextPrime(source.m_size);
+        
+        // Copy the count from the source table
         m_count = source.m_count;
+
+        // Allocate a new table with the adjusted size
         m_table = new std::forward_list<entry_type>[m_size];
 
+        // Iterate through the source table and insert each key-value pair into the current table
         for (size_t i{0}; i < source.m_size; ++i) {
             for (const auto& entry : source.m_table[i]) {
                 insert(entry.m_key, entry.m_data);
@@ -347,44 +408,84 @@ namespace ac {
     }
 
 
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-    void HashTbl<KeyType,DataType,KeyHash,KeyEqual>::initialize_hash_ilist( const std::initializer_list<entry_type>& ilist )
-    {
-        if(!isPrime(ilist.size())) m_size = m_count = nextPrime(ilist.size());
+    /*!
+     * @brief Initializes the hash table with the contents of an initializer list.
+     *
+     * This function initializes the current hash table by copying the contents of an initializer list.
+     * It adjusts the size, count, and table structure to match the size of the initializer list and inserts
+     * each key-value pair from the initializer list into the current hash table.
+     *
+     * @param ilist The initializer list containing key-value pairs.
+     *
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::initialize_hash_ilist(
+        const std::initializer_list<entry_type>& ilist) {
+        
+        // Check if the size of the initializer list is prime, adjust the size if necessary
+        if (!isPrime(ilist.size()))
+            m_size = m_count = nextPrime(ilist.size());
+        
+        // Set the size and count to match the initializer list size
         m_size = m_count = ilist.size();
+
+        // Allocate a new table with the adjusted size
         m_table = new std::forward_list<entry_type>[m_size];
 
+        // Iterate through the initializer list and insert each key-value pair into the current table
         for (const auto& entry : ilist) {
             insert(entry.m_key, entry.m_data);
         }
     }
 
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-    bool HashTbl<KeyType,DataType,KeyHash,KeyEqual>::isPrime(size_type num)const{
+    /*!
+     * @brief Checks if a given number is a prime number.
+     *
+     * This function checks whether the provided number is a prime number.
+     * It returns true if the number is prime and false otherwise.
+     *
+     * @param num The number to be checked for primality.
+     * @return true if the number is prime, false otherwise.
+     *
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    bool HashTbl<KeyType, DataType, KeyHash, KeyEqual>::isPrime(size_type num) const {
+        // Check if the number is less than or equal to 1
         if (num <= 1) {
-            return false;
+            return false; // 1 is not a prime number, and negatives are not prime either
         }
-
+        // Iterate from 2 to the square root of the number
         for (int i = 2; i * i <= num; ++i) {
+            // If the number is divisible by any value in the range, it is not prime
             if (num % i == 0) {
                 return false;
             }
         }
-
+        // If no divisor is found, the number is prime
         return true;
     }
 
-    template< typename KeyType, typename DataType, typename KeyHash, typename KeyEqual >
-    int HashTbl<KeyType,DataType,KeyHash,KeyEqual>::nextPrime(size_type num)const{
+    /*!
+     * @brief Finds the next prime number greater than the given number.
+     *
+     * This function finds the next prime number greater than the provided number.
+     * It iteratively increments the given number until a prime number is found.
+     *
+     * @param num The number for which the next prime is to be found.
+     * @return The next prime number greater than the provided number.
+     */
+    template <typename KeyType, typename DataType, typename KeyHash, typename KeyEqual>
+    int HashTbl<KeyType, DataType, KeyHash, KeyEqual>::nextPrime(size_type num) const {
+        // Continue incrementing the number until a prime number is found
         while (true) {
             ++num;
+
+            // If the current number is prime, return it
             if (isPrime(num)) {
                 return num;
             }
         }
     }
-
-
 
 
 
