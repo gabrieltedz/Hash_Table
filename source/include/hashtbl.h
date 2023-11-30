@@ -53,7 +53,7 @@ namespace ac // Associative container
             bool erase( const KeyType & );
             void clear();
             bool empty() const;
-            inline size_type size() const { return m_count; };
+            inline size_type size() const { return m_size; };
             DataType& at( const KeyType& );
             DataType& operator[]( const KeyType& );
             size_type count( const KeyType& ) const;
@@ -65,9 +65,10 @@ namespace ac // Associative container
             friend std::ostream & operator<<(std::ostream & os_, const HashTbl & ht_)
             {
                 for (size_t i{0}; i < ht_.m_size; ++i) {
+                    os_ << "[" << i << "]->\n";
                     for (const auto& entry : ht_.m_table[i]) {
                         const auto &e = entry.m_data;
-                        std::cout << e << "\n";
+                        os_ << e << "\n";
                     }
                 }
 
@@ -80,12 +81,18 @@ namespace ac // Associative container
 
 
         private:
-            static size_type find_next_prime( size_type );
             void rehash( void );
+
+            void initialize_hash(const HashTbl&);
+            void initialize_hash_ilist( const std::initializer_list< entry_type > & );
+
+            bool isPrime(size_type )const;
+            int nextPrime(size_type)const;
 
         private:
             size_type m_size; //!< Tamanho da tabela.
             size_type m_count;//!< Numero de elementos na tabel.
+            float m_factor_load; //!< fator
             // std::unique_ptr< std::forward_list< entry_type > [] > m_table;
             std::forward_list< entry_type > *m_table; //!< Tabela de listas para entradas de tabela.
             static const short DEFAULT_SIZE = 11;
