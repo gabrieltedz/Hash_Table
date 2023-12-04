@@ -1,3 +1,0 @@
-/home/gabriel-v/hash/trabalho-05-hash-table-duplas-the_thiago_the_gabriel/source/build/CMakeFiles/run_tests.dir
-/home/gabriel-v/hash/trabalho-05-hash-table-duplas-the_thiago_the_gabriel/source/build/CMakeFiles/edit_cache.dir
-/home/gabriel-v/hash/trabalho-05-hash-table-duplas-the_thiago_the_gabriel/source/build/CMakeFiles/rebuild_cache.dir

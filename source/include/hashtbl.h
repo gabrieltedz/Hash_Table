@@ -86,13 +86,13 @@ namespace ac // Associative container
             void initialize_hash(const HashTbl&);
             void initialize_hash_ilist( const std::initializer_list< entry_type > & );
 
-            bool isPrime(size_type )const;
+            bool isPrime(size_type)const;
             int nextPrime(size_type)const;
 
         private:
             size_type m_size{0}; //!< Tamanho da tabela.
-            size_type m_count;//!< Numero de elementos na tabel.
-            float m_factor_load; //!< fator
+            size_type m_count{0};//!< Numero de elementos na tabel.
+            float m_factor_load{0}; //!< fator
             // std::unique_ptr< std::forward_list< entry_type > [] > m_table;
             std::forward_list< entry_type > *m_table; //!< Tabela de listas para entradas de tabela.
             static const short DEFAULT_SIZE = 11;

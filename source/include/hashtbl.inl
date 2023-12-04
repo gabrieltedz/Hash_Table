@@ -23,7 +23,8 @@ namespace ac {
             m_size = nextPrime(sz);
 
         // Number of data is zero.
-        m_count = 0;
+        //m_count = 0;
+        
 
         // Initializes the hash with the appropriate and prime size.
         m_table = new std::forward_list<entry_type>[m_size];
@@ -41,7 +42,6 @@ namespace ac {
         initialize_hash(source);
         m_count = source.m_count;
         m_size = source.m_size;
-
     }
 
     /*!
@@ -127,7 +127,9 @@ namespace ac {
 
         if (it == hash_list.end()) {
             // The key does not exist, add a new element to the list
-            hash_list.emplace_front(key_, new_data_);
+            //hash_list.emplace_front(key_, new_data_);
+            hash_list.push_front(HashEntry(key_, new_data_));
+           // std::cout << new_data_ << "\n";
             m_count++;
 
             if (m_count / m_size > m_factor_load) {
@@ -412,17 +414,17 @@ void HashTbl<KeyType, DataType, KeyHash, KeyEqual>::clear()
 
         
         // Copy the data from the source table
-         m_size = source.m_size;
-         m_count = source.m_count;
+        m_size = source.m_size;
+        m_count = source.m_count;
 
         // Allocate a new table with the adjusted size
         m_table = new std::forward_list<entry_type>[m_size];
 
-        // Iterate through the source table and insert each key-value pair into the current table
+        //m_table = source.m_table;
+
+        //Iterate through the source table and insert each key-value pair into the current table
         for (size_t i{0}; i < source.m_size; ++i) {
-            for (const auto& entry : source.m_table[i]) {
-                insert(entry.m_key, entry.m_data);
-            }
+            m_table[i] = source.m_table[i];
         }
     }
 
